@@ -1,5 +1,5 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="[https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6](https://guao.org/sites/default/files/biblioteca/Constituci%C3%B3n%20de%20la%20Rep%C3%BAblica%20Bolivariana%20de%20Venezuela_0.jpg)" />
+<img width="1200" height="475" alt="GHBanner" src="[https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6](https://guao.org/sites/default/files/biblioteca/Constituci%C3%B3n%20de%20la%20Rep%C3%BAblica%20Bolivariana%20de%20Venezuela_0)" />
 </div>
 
 # Run and deploy your AI Studio app
