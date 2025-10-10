@@ -2,16 +2,16 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Constitución - Venezuela</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      // This configuration must be included BEFORE the Tailwind CSS script.
+      // This configuration must be included AFTER the Tailwind CSS script.
       // It enables the 'class' strategy for dark mode, allowing the app to toggle it.
       tailwind.config = {
         darkMode: 'class',
       }
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -30,6 +30,17 @@
         .dark ::-webkit-scrollbar-track { background: #2d3748; }
         .dark ::-webkit-scrollbar-thumb { background: #4a5568; }
         .dark ::-webkit-scrollbar-thumb:hover { background: #718096; }
+        
+        /* Animation for highlighting a shared article */
+        @keyframes highlight-fade {
+            0% { background-color: rgba(250, 204, 21, 0.5); } /* yellow-400 with opacity */
+            100% { background-color: transparent; }
+        }
+        .highlight-article {
+            animation: highlight-fade 3s ease-in-out;
+            border-radius: 8px;
+        }
+
     </style>
 <script type="importmap">
 {
@@ -42,12 +53,10 @@
 }
 </script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script type="text/babel" data-type="module" src="./index.tsx"></script>
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>
