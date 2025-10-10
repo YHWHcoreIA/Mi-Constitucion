@@ -86,24 +86,6 @@ export default function App() {
     title: ''
   });
 
-  useEffect(() => {
-    const bodyClasses = document.body.classList;
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      bodyClasses.remove('bg-gray-100', 'text-gray-800');
-      bodyClasses.add('bg-gray-900', 'text-gray-200');
-    } else {
-      document.documentElement.classList.remove('dark');
-      bodyClasses.remove('bg-gray-900', 'text-gray-200');
-      bodyClasses.add('bg-gray-100', 'text-gray-800');
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
-  };
-
   const searchableArticles = useMemo((): SearchableArticle[] => {
     const articles: SearchableArticle[] = [];
     constitutionData.forEach(titulo => {
@@ -125,6 +107,50 @@ export default function App() {
     });
     return articles;
   }, []);
+
+  useEffect(() => {
+    const bodyClasses = document.body.classList;
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      bodyClasses.remove('bg-gray-100', 'text-gray-800');
+      bodyClasses.add('bg-gray-900', 'text-gray-200');
+    } else {
+      document.documentElement.classList.remove('dark');
+      bodyClasses.remove('bg-gray-900', 'text-gray-200');
+      bodyClasses.add('bg-gray-100', 'text-gray-800');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  // Handle deep linking from URL parameter
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const articleNum = params.get('articulo');
+    if (articleNum && searchableArticles.length > 0) {
+        const target = searchableArticles.find(a => String(a.articulo.numero).toLowerCase() === articleNum.toLowerCase());
+        if (target) {
+            // Navigate to the correct main section first
+            setContentId(target.context.titulo.id);
+            // Then scroll to the specific article after the view has re-rendered
+            setTimeout(() => {
+                const elementId = `articulo-${articleNum}`;
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Add a temporary highlight effect
+                    element.classList.add('highlight-article');
+                    setTimeout(() => {
+                        element.classList.remove('highlight-article');
+                    }, 3000); // Highlight duration: 3 seconds
+                }
+            }, 200); // Small delay to ensure the DOM is updated
+        }
+    }
+  }, [searchableArticles]);
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
 
   const searchResults = useMemo((): SearchResult[] => {
       if (searchQuery.length < 3) {

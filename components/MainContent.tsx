@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MenuIcon, SparklesIcon, CopyIcon } from './icons';
+import { MenuIcon, SparklesIcon, CopyIcon, ShareIcon, GithubIcon } from './icons';
 import type { Articulo, Titulo, Capitulo, Seccion } from '../types';
 import type { SearchResult } from '../App';
 
@@ -42,6 +42,7 @@ const ArticleCard: React.FC<{
   onInterpret: (articulo: Articulo) => void;
 }> = ({ articulo, onInterpret }) => {
   const [copyStatus, setCopyStatus] = useState('Copiar Texto');
+  const [shareStatus, setShareStatus] = useState('Compartir');
 
   const handleCopy = () => {
     const textToCopy = `Artículo ${articulo.numero}: ${articulo.texto}`;
@@ -53,19 +54,51 @@ const ArticleCard: React.FC<{
     });
   };
 
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}${window.location.pathname}?articulo=${articulo.numero}`;
+    const shareData = {
+        title: `Constitución de Venezuela - Artículo ${articulo.numero}`,
+        text: `Artículo ${articulo.numero}: ${articulo.texto}`,
+        url: shareUrl,
+    };
+
+    if (navigator.share) {
+        try {
+            await navigator.share(shareData);
+        } catch (error) {
+            console.error('Error al compartir:', error);
+        }
+    } else {
+        // Fallback for browsers that do not support Web Share API
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            setShareStatus('✅ Enlace Copiado!');
+            setTimeout(() => setShareStatus('Compartir'), 2000);
+        }).catch(() => {
+            setShareStatus('Error al copiar');
+        });
+    }
+  };
+
   return (
-    <div className="mb-4 py-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+    <div id={`articulo-${articulo.numero}`} className="mb-4 py-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
       <h4 className="font-bold text-xl text-blue-600 dark:text-blue-400">
         Artículo {articulo.numero}
       </h4>
       <p className="text-base md:text-lg text-justify leading-relaxed md:leading-loose mt-2">{articulo.texto}</p>
-      <div className="mt-3 flex items-center space-x-2">
+      <div className="mt-3 flex items-center space-x-2 flex-wrap gap-2">
         <button
           onClick={() => onInterpret(articulo)}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 ease-in-out transform hover:scale-105"
         >
           <SparklesIcon className="w-5 h-5 mr-2" />
           Interpretar Artículo
+        </button>
+        <button
+          onClick={handleShare}
+          className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+            <ShareIcon className="w-5 h-5 mr-2" />
+            {shareStatus}
         </button>
         <button
           onClick={handleCopy}
@@ -197,6 +230,15 @@ export const MainContent: React.FC<MainContentProps> = ({
 
       <footer className="text-center mt-8 text-gray-500 dark:text-gray-400 text-sm">
         <p>&copy; {new Date().getFullYear()} Mi Constitución. Una herramienta didáctica para el estudio de la Constitución de Venezuela.</p>
+         <a 
+          href="https://github.com/YHWHcoreIA/Mi-Constitucion" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 mt-2 hover:text-blue-500 dark:hover:text-blue-400 underline"
+        >
+          <GithubIcon className="w-4 h-4" />
+          Ver en GitHub
+        </a>
       </footer>
     </>
   );
