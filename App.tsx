@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Sidebar } from './components/Sidebar';
-import { MainContent } from './components/MainContent';
-import { InterpretationModal } from './components/InterpretationModal';
-import { getInterpretation } from './services/geminiService';
-import { constitutionData } from './data/constitution';
-import type { Articulo, Titulo, Capitulo, Seccion } from './types';
+import { Sidebar } from './components/Sidebar.tsx';
+import { MainContent } from './components/MainContent.tsx';
+import { InterpretationModal } from './components/InterpretationModal.tsx';
+import { getInterpretation } from './services/geminiService.ts';
+import { constitutionData } from './data/constitution.ts';
+import type { Articulo, Titulo, Capitulo, Seccion } from './types.ts';
 
 export interface SearchResult {
   articulo: Articulo;

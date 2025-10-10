@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
-import { constitutionData } from '../data/constitution';
-import type { Titulo, Capitulo, Seccion } from '../types';
-import { CloseIcon, SearchIcon, ChevronDownIcon } from './icons';
+import { constitutionData } from '../data/constitution.ts';
+import type { Titulo, Capitulo, Seccion } from '../types.ts';
+import { CloseIcon, SearchIcon, ChevronDownIcon } from './icons.tsx';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -18,53 +17,49 @@ interface SidebarProps {
   setSortOrder: (order: string) => void;
 }
 
-type NavigableItem = Titulo | Capitulo | Seccion;
-
-const getChildren = (item: NavigableItem): NavigableItem[] | undefined => {
-    if ('capitulos' in item && item.capitulos) return item.capitulos;
-    if ('secciones' in item && item.secciones) return item.secciones;
-    return undefined;
-};
-
 const NavItem: React.FC<{
-    item: NavigableItem;
-    onNavigate: (id: string) => void;
-    level: number;
+  item: Titulo | Capitulo | Seccion;
+  onNavigate: (id: string) => void;
+  level: number;
 }> = ({ item, onNavigate, level }) => {
-    const [isExpanded, setExpanded] = useState(level < 1); // Expand Títulos by default
-    const children = getChildren(item);
-    const hasChildren = children && children.length > 0;
+  const [isExpanded, setIsExpanded] = useState(level === 0);
+  const children = ('capitulos' in item && item.capitulos) || ('secciones' in item && item.secciones);
+  const hasChildren = children && children.length > 0;
 
-    const handleClick = () => {
-        onNavigate(item.id);
-        if (hasChildren) {
-            setExpanded(!isExpanded);
-        }
-    };
+  const handleToggle = () => {
+    setIsExpanded(!isExpanded);
+  };
+  
+  const handleNavigate = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onNavigate(item.id);
+  };
 
-    return (
+  const paddingLeft = `${level * 1 + 1}rem`;
+
+  return (
+    <div>
+      <div
+        className="flex items-center justify-between p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-md"
+        style={{ paddingLeft }}
+        onClick={hasChildren ? handleToggle : handleNavigate}
+      >
+        <span className="flex-1" onClick={handleNavigate}>{item.nombre}</span>
+        {hasChildren && (
+          <ChevronDownIcon
+            className={`w-5 h-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+          />
+        )}
+      </div>
+      {isExpanded && hasChildren && (
         <div>
-            <button
-                onClick={handleClick}
-                className="w-full text-left flex justify-between items-center py-2 px-3 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                style={{ paddingLeft: `${0.75 + level * 0.75}rem` }}
-            >
-                <span className={`${level === 0 ? 'font-semibold' : 'text-sm'}`}>{item.nombre}</span>
-                {hasChildren && (
-                    <ChevronDownIcon
-                        className={`w-4 h-4 transition-transform transform ${isExpanded ? 'rotate-180' : ''}`}
-                    />
-                )}
-            </button>
-            {isExpanded && hasChildren && (
-                <div className="mt-1 space-y-1">
-                    {children.map(child => (
-                        <NavItem key={child.id} item={child} onNavigate={onNavigate} level={level + 1} />
-                    ))}
-                </div>
-            )}
+          {children.map(child => (
+            <NavItem key={child.id} item={child} onNavigate={onNavigate} level={level + 1} />
+          ))}
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -78,64 +73,81 @@ export const Sidebar: React.FC<SidebarProps> = ({
   filterType,
   setFilterType,
   sortOrder,
-  setSortOrder
+  setSortOrder,
 }) => {
-  const selectClasses = "w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm";
-  
   return (
-    <nav className={`w-full md:w-80 bg-white dark:bg-gray-800 shadow-lg p-6 flex-shrink-0 transition-transform md:translate-x-0 fixed md:relative h-full z-30 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-blue-700 dark:text-blue-400">Mi Constitución</h1>
-        <button onClick={() => setOpen(false)} className="md:hidden text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
-          <CloseIcon className="w-6 h-6" />
-        </button>
-      </div>
-
-      <div className="relative mb-2">
-        <input
-          type="search"
-          placeholder="Buscar artículo o palabra..."
-          value={searchQuery}
-          onChange={(e) => onSearch(e.target.value)}
-          className="w-full p-2 pl-8 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <SearchIcon className="w-5 h-5 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2" />
-      </div>
-
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        <div>
-          <label htmlFor="filterType" className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Filtrar</label>
-          <select id="filterType" value={filterType} onChange={e => setFilterType(e.target.value)} className={selectClasses}>
-            <option value="all">Todos</option>
-            <option value="titulo">Títulos</option>
-            <option value="capitulo">Capítulos</option>
-            <option value="seccion">Secciones</option>
-          </select>
+    <>
+      <div
+        className={`fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden transition-opacity ${
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setOpen(false)}
+      ></div>
+      <aside
+        className={`fixed top-0 left-0 h-full w-72 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-lg p-4 z-40 transform transition-transform md:relative md:translate-x-0 md:w-80 md:shadow-none flex flex-col ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold text-blue-600 dark:text-blue-400">Navegación</h2>
+          <button onClick={() => setOpen(false)} className="md:hidden">
+            <CloseIcon className="w-6 h-6" />
+          </button>
         </div>
-        <div>
-        <label htmlFor="sortOrder" className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Ordenar</label>
-          <select id="sortOrder" value={sortOrder} onChange={e => setSortOrder(e.target.value)} className={selectClasses}>
-            <option value="relevance">Relevancia</option>
-            <option value="constitutional">Orden Constitucional</option>
-          </select>
+
+        <div className="relative mb-4">
+          <input
+            type="text"
+            placeholder="Buscar artículo o palabra..."
+            value={searchQuery}
+            onChange={e => onSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <SearchIcon className="w-5 h-5 text-gray-400" />
+          </div>
         </div>
-      </div>
+        
+        {searchQuery.length > 2 && (
+            <div className="mb-4 p-2 border border-gray-200 dark:border-gray-700 rounded-md">
+                <h3 className="font-semibold mb-2 text-sm">Opciones de Búsqueda</h3>
+                <div className="flex flex-col gap-2">
+                    <div>
+                        <label htmlFor="filterType" className="text-xs text-gray-600 dark:text-gray-400">Filtrar por:</label>
+                        <select id="filterType" value={filterType} onChange={e => setFilterType(e.target.value)} className="w-full text-sm p-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700">
+                            <option value="all">Todos</option>
+                            <option value="titulo">Solo en Títulos</option>
+                            <option value="capitulo">Solo en Capítulos</option>
+                            <option value="seccion">Solo en Secciones</option>
+                        </select>
+                    </div>
+                     <div>
+                        <label htmlFor="sortOrder" className="text-xs text-gray-600 dark:text-gray-400">Ordenar por:</label>
+                        <select id="sortOrder" value={sortOrder} onChange={e => setSortOrder(e.target.value)} className="w-full text-sm p-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700">
+                            <option value="relevance">Relevancia</option>
+                            <option value="constitutional">Orden Constitucional</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        )}
 
+        <nav className="flex-1 overflow-y-auto pr-2 -mr-2">
+          <ul>
+            {constitutionData.map(titulo => (
+              <li key={titulo.id}>
+                <NavItem item={titulo} onNavigate={onNavigate} level={0} />
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-      <button onClick={() => onNavigate(constitutionData[0].id)} className="cursor-pointer text-blue-600 dark:text-blue-400 hover:underline mb-4 text-sm">
-        Volver al inicio
-      </button>
-
-      <div className="overflow-y-auto h-[calc(100vh-320px)] space-y-1">
-        {constitutionData.map(titulo => (
-            <NavItem key={titulo.id} item={titulo} onNavigate={onNavigate} level={0} />
-        ))}
-      </div>
-      
-      <button onClick={toggleTheme} className="mt-4 w-full p-2 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center">
-        <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
-        <span className="ml-2">{theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}</span>
-      </button>
-    </nav>
+        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button onClick={toggleTheme} className="w-full text-left p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                Cambiar a modo {theme === 'light' ? 'oscuro' : 'claro'}
+            </button>
+        </div>
+      </aside>
+    </>
   );
 };

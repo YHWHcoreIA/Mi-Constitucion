@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import type { GenerateContentResponse } from "@google/genai";
-import type { Articulo } from '../types';
+import type { Articulo } from '../types.ts';
 
 // Singleton instance, lazily initialized.
 let ai: GoogleGenAI | null = null;
